@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Dodge - Kids Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Nunito:wght@400;600;700&family=Comic+Neue:wght@400;700&display=swap');
+        
+        :root {
+            --brand-purple: #7B54FA;
+            --brand-purple-light: #9B7BFF;
+            --brand-purple-dark: #5B34DA;
+        }
+        
+        .brand-purple { color: var(--brand-purple); }
+        .bg-brand-purple { background-color: var(--brand-purple); }
+        .border-brand-purple { border-color: var(--brand-purple); }
+        
+        .bounce-in {
+            animation: bounceIn 0.8s ease-out;
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: scale(0) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(180deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+        
+        .shake {
+            animation: shake 0.6s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px) rotate(-5deg); }
+            75% { transform: translateX(10px) rotate(5deg); }
+        }
+        
+        .glow-pulse {
+            animation: glowPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(123, 84, 250, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(123, 84, 250, 0.6); }
+        }
+        
+        .float-animation {
+            animation: floatAnimation 3s ease-in-out infinite;
+        }
+        
+        @keyframes floatAnimation {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+        
+        .word-button {
+            transition: all 0.3s ease;
+        }
+        
+        .word-button:hover {
+            transform: scale(1.05) rotate(2deg);
+        }
+        
+        .word-button:active {
+            transform: scale(0.95);
+        }
+        
+        .theme-transition {
+            transition: all 0.5s ease-in-out;
+        }
+        
+        .eliminated {
+            opacity: 0.5;
+            filter: grayscale(100%);
+        }
+        
+        /* Theme-specific styles */
+        .theme-animals {
+            background: linear-gradient(135deg, #FFE5B4 0%, #FFCCCB 50%, #E6E6FA 100%);
+        }
+        
+        .theme-space {
+            background: linear-gradient(135deg, #000428 0%, #004e92 50%, #7B54FA 100%);
+        }
+        
+        .theme-gaming {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #7B54FA 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen theme-transition" id="gameBody">
+    
+    <!-- Theme Selector -->
+    <div class="fixed top-4 right-4 z-50">
+        <div class="bg-white rounded-2xl p-3 shadow-lg">
+            <div class="text-xs font-semibold text-gray-600 mb-2 text-center">Choose Theme:</div>
+            <div class="flex space-x-2">
+                <button onclick="changeTheme('animals')" class="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-200 to-pink-200 flex items-center justify-center text-xl hover:scale-110 transition-transform" title="5-7 Years: Animals">
+                    🐱
+                </button>
+                <button onclick="changeTheme('space')" class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-900 to-purple-600 flex items-center justify-center text-xl hover:scale-110 transition-transform" title="7-9 Years: Space">
+                    🚀
+                </button>
+                <button onclick="changeTheme('gaming')" class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-800 to-purple-600 flex items-center justify-center text-xl hover:scale-110 transition-transform" title="10-14 Years: Gaming">
+                    🎮
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Header -->
+    <div class="text-center py-6">
+        <h1 id="gameTitle" class="text-4xl md:text-5xl font-bold text-white mb-2" style="font-family: 'Fredoka One', cursive;">
+            🐾 Animal Word Dodge 🐾
+        </h1>
+        <p id="gameSubtitle" class="text-white text-lg font-semibold">Don't pick the same word as the Denner!</p>
+        <div id="ageGroup" class="text-white text-sm opacity-80 mt-1">Perfect for ages 5-7</div>
+    </div>
+    
+    <!-- Game Container -->
+    <div class="max-w-6xl mx-auto px-4">
+        
+        <!-- Game Setup -->
+        <div id="setupScreen" class="bg-white bg-opacity-95 rounded-3xl p-8 shadow-2xl mb-6">
+            <h3 class="text-3xl font-bold text-center brand-purple mb-6" style="font-family: 'Fredoka One', cursive;">
+                🎯 Game Setup 🎯
+            </h3>
+            
+            <div class="max-w-md mx-auto space-y-6">
+                <div>
+                    <label class="block text-lg font-bold brand-purple mb-3">Number of Players (2-6):</label>
+                    <input type="number" id="playerCount" min="2" max="6" value="4" class="w-full p-4 text-2xl text-center rounded-2xl border-4 border-purple-300 focus:border-purple-500 focus:outline-none">
+                </div>
+                
+                <button onclick="startGame()" class="w-full bg-brand-purple hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 text-xl">
+                    🚀 Start Game!
+                </button>
+            </div>
+            
+            <!-- How to Play -->
+            <div class="mt-8 bg-purple-50 rounded-2xl p-6">
+                <h4 class="text-xl font-bold brand-purple mb-4">📖 How to Play:</h4>
+                <div class="space-y-2 text-gray-700">
+                    <p>1. One player is the "Denner" who secretly picks a word</p>
+                    <p>2. All other players choose from the same list of words</p>
+                    <p>3. If you pick the same word as the Denner, you're OUT!</p>
+                    <p>4. Last player remaining wins and becomes the next Denner</p>
+                    <p>5. Points: 1st out = 0 points, 2nd out = 1 point, etc.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Game Screen -->
+        <div id="gameScreen" class="hidden">
+            
+            <!-- Current Round Info -->
+            <div class="bg-white bg-opacity-95 rounded-3xl p-6 mb-6 shadow-2xl">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div class="bg-purple-50 rounded-2xl p-4">
+                        <div class="text-lg font-bold brand-purple">Round</div>
+                        <div class="text-3xl font-bold text-purple-800" id="currentRound">1</div>
+                    </div>
+                    <div class="bg-blue-50 rounded-2xl p-4">
+                        <div class="text-lg font-bold text-blue-600">Current Denner</div>
+                        <div class="text-2xl font-bold text-blue-800" id="currentDenner">Player 1</div>
+                    </div>
+                    <div class="bg-green-50 rounded-2xl p-4">
+                        <div class="text-lg font-bold text-green-600">Players Left</div>
+                        <div class="text-3xl font-bold text-green-800" id="playersLeft">4</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Denner Selection -->
+            <div id="dennerScreen" class="bg-white bg-opacity-95 rounded-3xl p-8 shadow-2xl mb-6">
+                <h3 class="text-2xl font-bold text-center brand-purple mb-6" style="font-family: 'Fredoka One', cursive;">
+                    🎯 <span id="dennerName">Player 1</span>, You're the Denner! 🎯
+                </h3>
+                <p class="text-center text-lg text-gray-700 mb-6">Choose your secret word. Other players shouldn't look!</p>
+                
+                <div id="dennerWords" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+                    <!-- Words will be populated here -->
+                </div>
+                
+                <div class="text-center mt-6">
+                    <button id="confirmDennerChoice" onclick="confirmDennerChoice()" class="bg-brand-purple hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 text-lg hidden">
+                        ✅ Confirm Choice
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Player Selection -->
+            <div id="playerScreen" class="bg-white bg-opacity-95 rounded-3xl p-8 shadow-2xl mb-6 hidden">
+                <h3 class="text-2xl font-bold text-center brand-purple mb-6" style="font-family: 'Fredoka One', cursive;">
+                    🎮 Players, Choose Your Words! 🎮
+                </h3>
+                <p class="text-center text-lg text-gray-700 mb-6">Don't pick the same word as the Denner!</p>
+                
+                <div id="playerWords" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl mx-auto mb-6">
+                    <!-- Words will be populated here -->
+                </div>
+                
+                <div class="text-center">
+                    <button id="revealResults" onclick="revealResults()" class="bg-brand-purple hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 text-lg hidden">
+                        🎭 Reveal Results!
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Results -->
+            <div id="resultsScreen" class="bg-white bg-opacity-95 rounded-3xl p-8 shadow-2xl mb-6 hidden">
+                <h3 class="text-2xl font-bold text-center brand-purple mb-6" style="font-family: 'Fredoka One', cursive;">
+                    🎊 Round Results 🎊
+                </h3>
+                
+                <div id="roundResults" class="space-y-4 mb-6">
+                    <!-- Results will be populated here -->
+                </div>
+                
+                <div class="text-center space-x-4">
+                    <button id="nextRoundBtn" onclick="nextRound()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 text-lg">
+                        ➡️ Next Round
+                    </button>
+                    <button onclick="showFinalScores()" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 text-lg">
+                        🏆 Final Scores
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Player Status -->
+            <div class="bg-white bg-opacity-95 rounded-3xl p-6 shadow-2xl">
+                <h3 class="text-xl font-bold text-center brand-purple mb-4">👥 Player Status</h3>
+                <div id="playerStatus" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <!-- Player status will be populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Final Scores -->
+        <div id="finalScreen" class="bg-white bg-opacity-95 rounded-3xl p-8 shadow-2xl mb-6 hidden">
+            <h3 class="text-3xl font-bold text-center brand-purple mb-6" style="font-family: 'Fredoka One', cursive;">
+                🏆 Final Scores 🏆
+            </h3>
+            
+            <div id="finalScores" class="space-y-4 mb-6">
+                <!-- Final scores will be populated here -->
+            </div>
+            
+            <div class="text-center">
+                <button onclick="resetGame()" class="bg-brand-purple hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 text-xl">
+                    🔄 Play Again
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Floating Decorations -->
+    <div id="floatingDecorations">
+        <div class="fixed top-20 left-10 text-4xl float-animation opacity-60">🌟</div>
+        <div class="fixed top-40 right-20 text-3xl float-animation opacity-60" style="animation-delay: 1s;">🎈</div>
+        <div class="fixed bottom-20 left-20 text-4xl float-animation opacity-60" style="animation-delay: 2s;">🎊</div>
+        <div class="fixed bottom-40 right-10 text-3xl float-animation opacity-60" style="animation-delay: 3s;">✨</div>
+    </div>
+    
+    <script>
+        let currentTheme = 'animals';
+        let gameState = {
+            players: [],
+            currentRound: 1,
+            currentDenner: 0,
+            dennerChoice: '',
+            playerChoices: {},
+            activePlayers: [],
+            scores: {}
+        };
+        
+        const themes = {
+            animals: {
+                title: '🐾 Animal Word Dodge 🐾',
+                subtitle: "Don't pick the same word as the Denner!",
+                ageGroup: 'Perfect for ages 5-7',
+                bodyClass: 'theme-animals',
+                words: ['🐱 Cat', '🐶 Dog', '🐰 Rabbit', '🐸 Frog', '🐧 Penguin', '🦁 Lion', '🐘 Elephant', '🐯 Tiger', '🐻 Bear', '🐼 Panda', '🦒 Giraffe', '🐵 Monkey'],
+                decorations: ['🌟', '🎈', '🎊', '✨']
+            },
+            space: {
+                title: '🚀 Space Word Dodge 🚀',
+                subtitle: "Don't pick the same word as the Denner!",
+                ageGroup: 'Perfect for ages 7-9',
+                bodyClass: 'theme-space',
+                words: ['🚀 Rocket', '🛸 UFO', '🛰️ Satellite', '⭐ Star', '🌙 Moon', '🪐 Planet', '☄️ Comet', '🌌 Galaxy', '👨‍🚀 Astronaut', '🔭 Telescope', '🌍 Earth', '🌞 Sun'],
+                decorations: ['⭐', '🌟', '✨', '🌙']
+            },
+            gaming: {
+                title: '🎮 Gaming Word Dodge 🎮',
+                subtitle: "Don't pick the same word as the Denner!",
+                ageGroup: 'Perfect for ages 10-14',
+                bodyClass: 'theme-gaming',
+                words: ['⚔️ Sword', '🛡️ Shield', '🏹 Bow', '🔮 Magic', '💎 Gem', '🗝️ Key', '🏰 Castle', '🐉 Dragon', '👑 Crown', '💰 Treasure', '🗡️ Blade', '🧙‍♂️ Wizard'],
+                decorations: ['⚡', '💎', '🔥', '💫']
+            }
+        };
+        
+        function changeTheme(themeName) {
+            currentTheme = themeName;
+            const theme = themes[themeName];
+            
+            // Update header
+            document.getElementById('gameTitle').textContent = theme.title;
+            document.getElementById('gameSubtitle').textContent = theme.subtitle;
+            document.getElementById('ageGroup').textContent = theme.ageGroup;
+            
+            // Update body class
+            document.getElementById('gameBody').className = `min-h-screen theme-transition ${theme.bodyClass}`;
+            
+            // Update decorations
+            updateDecorations();
+        }
+        
+        function updateDecorations() {
+            const theme = themes[currentTheme];
+            const decorationsContainer = document.getElementById('floatingDecorations');
+            
+            decorationsContainer.innerHTML = `
+                <div class="fixed top-20 left-10 text-4xl float-animation opacity-60">${theme.decorations[0]}</div>
+                <div class="fixed top-40 right-20 text-3xl float-animation opacity-60" style="animation-delay: 1s;">${theme.decorations[1]}</div>
+                <div class="fixed bottom-20 left-20 text-4xl float-animation opacity-60" style="animation-delay: 2s;">${theme.decorations[2]}</div>
+                <div class="fixed bottom-40 right-10 text-3xl float-animation opacity-60" style="animation-delay: 3s;">${theme.decorations[3]}</div>
+            `;
+        }
+        
+        function startGame() {
+            const playerCount = parseInt(document.getElementById('playerCount').value);
+            
+            if (playerCount < 2 || playerCount > 6) {
+                alert('Please enter a number between 2 and 6 players!');
+                return;
+            }
+            
+            // Initialize game state
+            gameState.players = [];
+            gameState.activePlayers = [];
+            gameState.scores = {};
+            
+            for (let i = 1; i <= playerCount; i++) {
+                gameState.players.push(`Player ${i}`);
+                gameState.activePlayers.push(`Player ${i}`);
+                gameState.scores[`Player ${i}`] = 0;
+            }
+            
+            gameState.currentRound = 1;
+            gameState.currentDenner = 0;
+            
+            // Show game screen
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            
+            updateGameInfo();
+            showDennerScreen();
+        }
+        
+        function updateGameInfo() {
+            document.getElementById('currentRound').textContent = gameState.currentRound;
+            document.getElementById('currentDenner').textContent = gameState.players[gameState.currentDenner];
+            document.getElementById('playersLeft').textContent = gameState.activePlayers.length;
+            updatePlayerStatus();
+        }
+        
+        function updatePlayerStatus() {
+            const statusContainer = document.getElementById('playerStatus');
+            statusContainer.innerHTML = '';
+            
+            gameState.players.forEach(player => {
+                const isActive = gameState.activePlayers.includes(player);
+                const isDenner = player === gameState.players[gameState.currentDenner];
+                
+                const playerDiv = document.createElement('div');
+                playerDiv.className = `p-4 rounded-2xl border-4 text-center ${
+                    isActive ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300 eliminated'
+                }`;
+                
+                playerDiv.innerHTML = `
+                    <div class="text-2xl mb-2">${isDenner ? '👑' : (isActive ? '😊' : '😵')}</div>
+                    <div class="font-bold ${isActive ? 'text-green-600' : 'text-red-600'}">${player}</div>
+                    <div class="text-sm ${isActive ? 'text-green-500' : 'text-red-500'}">
+                        ${isDenner ? 'Denner' : (isActive ? 'Active' : 'Eliminated')}
+                    </div>
+                    <div class="text-lg font-bold mt-2">${gameState.scores[player]} pts</div>
+                `;
+                
+                statusContainer.appendChild(playerDiv);
+            });
+        }
+        
+        function showDennerScreen() {
+            document.getElementById('dennerName').textContent = gameState.players[gameState.currentDenner];
+            
+            const theme = themes[currentTheme];
+            const wordsContainer = document.getElementById('dennerWords');
+            wordsContainer.innerHTML = '';
+            
+            // Select random words for this round
+            const shuffledWords = [...theme.words].sort(() => Math.random() - 0.5);
+            const roundWords = shuffledWords.slice(0, gameState.activePlayers.length);
+            
+            roundWords.forEach(word => {
+                const button = document.createElement('button');
+                button.className = 'word-button bg-gradient-to-br from-purple-200 to-purple-300 hover:from-purple-300 hover:to-purple-400 rounded-2xl p-4 border-4 border-purple-400 shadow-lg hover:shadow-xl text-lg font-bold text-purple-800';
+                button.textContent = word;
+                button.onclick = () => selectDennerWord(word, button);
+                wordsContainer.appendChild(button);
+            });
+            
+            document.getElementById('dennerScreen').classList.remove('hidden');
+            document.getElementById('playerScreen').classList.add('hidden');
+            document.getElementById('resultsScreen').classList.add('hidden');
+        }
+        
+        function selectDennerWord(word, button) {
+            // Remove previous selection
+            document.querySelectorAll('#dennerWords button').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-yellow-400');
+            });
+            
+            // Highlight selected word
+            button.classList.add('ring-4', 'ring-yellow-400');
+            gameState.dennerChoice = word;
+            
+            document.getElementById('confirmDennerChoice').classList.remove('hidden');
+        }
+        
+        function confirmDennerChoice() {
+            if (!gameState.dennerChoice) return;
+            
+            document.getElementById('dennerScreen').classList.add('hidden');
+            document.getElementById('playerScreen').classList.remove('hidden');
+            
+            showPlayerScreen();
+        }
+        
+        function showPlayerScreen() {
+            const theme = themes[currentTheme];
+            const wordsContainer = document.getElementById('playerWords');
+            wordsContainer.innerHTML = '';
+            
+            // Use the same words that were shown to denner
+            const dennerWordsElements = document.querySelectorAll('#dennerWords button');
+            const roundWords = Array.from(dennerWordsElements).map(btn => btn.textContent);
+            
+            gameState.playerChoices = {};
+            
+            roundWords.forEach(word => {
+                const button = document.createElement('button');
+                button.className = 'word-button bg-gradient-to-br from-blue-200 to-blue-300 hover:from-blue-300 hover:to-blue-400 rounded-2xl p-4 border-4 border-blue-400 shadow-lg hover:shadow-xl text-lg font-bold text-blue-800';
+                button.textContent = word;
+                button.onclick = () => selectPlayerWord(word, button);
+                wordsContainer.appendChild(button);
+            });
+        }
+        
+        function selectPlayerWord(word, button) {
+            // Toggle selection
+            if (button.classList.contains('ring-4')) {
+                button.classList.remove('ring-4', 'ring-yellow-400');
+                delete gameState.playerChoices[word];
+            } else {
+                button.classList.add('ring-4', 'ring-yellow-400');
+                gameState.playerChoices[word] = (gameState.playerChoices[word] || 0) + 1;
+            }
+            
+            // Show reveal button if at least one choice is made
+            const hasChoices = Object.keys(gameState.playerChoices).length > 0;
+            document.getElementById('revealResults').classList.toggle('hidden', !hasChoices);
+        }
+        
+        function revealResults() {
+            const resultsContainer = document.getElementById('roundResults');
+            resultsContainer.innerHTML = '';
+            
+            // Show denner's choice
+            const dennerResult = document.createElement('div');
+            dennerResult.className = 'bg-purple-100 rounded-2xl p-4 border-4 border-purple-300';
+            dennerResult.innerHTML = `
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-800 mb-2">👑 Denner's Choice</div>
+                    <div class="text-3xl font-bold text-purple-900">${gameState.dennerChoice}</div>
+                </div>
+            `;
+            resultsContainer.appendChild(dennerResult);
+            
+            // Determine eliminated players
+            const eliminatedThisRound = [];
+            Object.keys(gameState.playerChoices).forEach(word => {
+                if (word === gameState.dennerChoice) {
+                    const count = gameState.playerChoices[word];
+                    for (let i = 0; i < count; i++) {
+                        // Find active players who might have chosen this word
+                        const availablePlayers = gameState.activePlayers.filter(p => 
+                            p !== gameState.players[gameState.currentDenner] && 
+                            !eliminatedThisRound.includes(p)
+                        );
+                        if (availablePlayers.length > 0) {
+                            eliminatedThisRound.push(availablePlayers[0]);
+                        }
+                    }
+                }
+            });
+            
+            // Update scores for eliminated players
+            eliminatedThisRound.forEach(player => {
+                const remainingPlayers = gameState.activePlayers.length - eliminatedThisRound.length;
+                gameState.scores[player] = Math.max(0, remainingPlayers - 1);
+                gameState.activePlayers = gameState.activePlayers.filter(p => p !== player);
+            });
+            
+            // Show results
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'bg-gray-100 rounded-2xl p-4 border-4 border-gray-300 mt-4';
+            
+            if (eliminatedThisRound.length > 0) {
+                resultDiv.innerHTML = `
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-red-600 mb-2">💥 Eliminated This Round</div>
+                        <div class="text-xl text-red-800">${eliminatedThisRound.join(', ')}</div>
+                        <div class="text-sm text-gray-600 mt-2">They chose the same word as the Denner!</div>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-600 mb-2">🎉 Safe Round!</div>
+                        <div class="text-lg text-green-800">No one chose the Denner's word!</div>
+                    </div>
+                `;
+            }
+            
+            resultsContainer.appendChild(resultDiv);
+            
+            // Show player choices summary
+            const choicesDiv = document.createElement('div');
+            choicesDiv.className = 'bg-blue-100 rounded-2xl p-4 border-4 border-blue-300 mt-4';
+            choicesDiv.innerHTML = `
+                <div class="text-center">
+                    <div class="text-lg font-bold text-blue-800 mb-2">📊 Player Choices</div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        ${Object.keys(gameState.playerChoices).map(word => 
+                            `<div class="bg-white rounded-lg p-2 ${word === gameState.dennerChoice ? 'ring-2 ring-red-400' : ''}">
+                                <div class="font-bold">${word}</div>
+                                <div class="text-sm">${gameState.playerChoices[word]} player(s)</div>
+                            </div>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+            resultsContainer.appendChild(choicesDiv);
+            
+            document.getElementById('resultsScreen').classList.remove('hidden');
+            updateGameInfo();
+            
+            // Check if game should end
+            if (gameState.activePlayers.length <= 1) {
+                document.getElementById('nextRoundBtn').classList.add('hidden');
+            }
+        }
+        
+        function nextRound() {
+            if (gameState.activePlayers.length <= 1) {
+                showFinalScores();
+                return;
+            }
+            
+            gameState.currentRound++;
+            
+            // Next denner (next active player)
+            do {
+                gameState.currentDenner = (gameState.currentDenner + 1) % gameState.players.length;
+            } while (!gameState.activePlayers.includes(gameState.players[gameState.currentDenner]));
+            
+            updateGameInfo();
+            showDennerScreen();
+            
+            // Reset UI
+            document.getElementById('confirmDennerChoice').classList.add('hidden');
+            document.getElementById('revealResults').classList.add('hidden');
+        }
+        
+        function showFinalScores() {
+            // Award points to remaining players
+            gameState.activePlayers.forEach((player, index) => {
+                gameState.scores[player] = gameState.activePlayers.length - 1 - index;
+            });
+            
+            // Sort players by score (descending)
+            const sortedPlayers = Object.keys(gameState.scores).sort((a, b) => gameState.scores[b] - gameState.scores[a]);
+            
+            const finalScoresContainer = document.getElementById('finalScores');
+            finalScoresContainer.innerHTML = '';
+            
+            sortedPlayers.forEach((player, index) => {
+                const scoreDiv = document.createElement('div');
+                const isWinner = index === 0;
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🏅';
+                
+                scoreDiv.className = `p-4 rounded-2xl border-4 ${
+                    isWinner ? 'bg-yellow-100 border-yellow-400' : 'bg-gray-100 border-gray-300'
+                }`;
+                
+                scoreDiv.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="text-3xl">${medal}</div>
+                            <div>
+                                <div class="text-xl font-bold ${isWinner ? 'text-yellow-800' : 'text-gray-800'}">${player}</div>
+                                <div class="text-sm ${isWinner ? 'text-yellow-600' : 'text-gray-600'}">
+                                    ${isWinner ? 'Winner!' : `#${index + 1}`}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-3xl font-bold ${isWinner ? 'text-yellow-800' : 'text-gray-800'}">
+                            ${gameState.scores[player]} pts
+                        </div>
+                    </div>
+                `;
+                
+                finalScoresContainer.appendChild(scoreDiv);
+            });
+            
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('finalScreen').classList.remove('hidden');
+        }
+        
+        function resetGame() {
+            // Reset all game state
+            gameState = {
+                players: [],
+                currentRound: 1,
+                currentDenner: 0,
+                dennerChoice: '',
+                playerChoices: {},
+                activePlayers: [],
+                scores: {}
+            };
+            
+            // Show setup screen
+            document.getElementById('setupScreen').classList.remove('hidden');
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('finalScreen').classList.add('hidden');
+            
+            // Reset player count
+            document.getElementById('playerCount').value = 4;
+        }
+        
+        // Initialize with animals theme
+        changeTheme('animals');
+    </script>
+    
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96c11923635f7f9d',t:'MTc1NDY3Nzk2Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

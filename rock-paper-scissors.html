@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kids Rock Paper Scissors</title>
+    <title>Player vs Player Rock Paper Scissors</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Nunito:wght@400;600;700&family=Comic+Neue:wght@400;700&display=swap');
@@ -72,6 +72,25 @@
             transition: all 0.5s ease-in-out;
         }
         
+        .countdown-animation {
+            animation: countdownPulse 1s ease-in-out;
+        }
+        
+        @keyframes countdownPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.5); }
+            100% { transform: scale(1); }
+        }
+        
+        .confetti {
+            animation: confetti 3s ease-out forwards;
+        }
+        
+        @keyframes confetti {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+        
         /* Theme-specific styles */
         .theme-animals {
             background: linear-gradient(135deg, #FFE5B4 0%, #FFCCCB 50%, #E6E6FA 100%);
@@ -83,6 +102,15 @@
         
         .theme-gaming {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #7B54FA 100%);
+        }
+        
+        .player-area {
+            min-height: 400px;
+        }
+        
+        .vs-divider {
+            background: linear-gradient(to bottom, transparent, var(--brand-purple), transparent);
+            width: 4px;
         }
     </style>
 </head>
@@ -108,15 +136,15 @@
     
     <!-- Header -->
     <div class="text-center py-6">
-        <h1 id="gameTitle" class="text-4xl md:text-5xl font-bold text-white mb-2" style="font-family: 'Fredoka One', cursive;">
-            🐾 Animal Battle 🐾
+        <h1 id="gameTitle" class="text-4xl md:text-6xl font-bold text-white mb-2" style="font-family: 'Fredoka One', cursive;">
+            🐾 Animal Rock Paper Scissors 🐾
         </h1>
-        <p id="gameSubtitle" class="text-white text-lg font-semibold">Choose your animal friend!</p>
+        <p id="gameSubtitle" class="text-white text-lg font-semibold">Player vs Player Battle!</p>
         <div id="ageGroup" class="text-white text-sm opacity-80 mt-1">Perfect for ages 5-7</div>
     </div>
     
     <!-- Game Container -->
-    <div class="max-w-4xl mx-auto px-4">
+    <div class="max-w-7xl mx-auto px-4">
         
         <!-- Score Board -->
         <div class="bg-white bg-opacity-95 rounded-3xl p-6 mb-6 shadow-2xl">
@@ -124,20 +152,21 @@
                 🏆 Score Board 🏆
             </h3>
             <div class="grid grid-cols-3 gap-4 text-center">
-                <div class="bg-green-50 rounded-2xl p-4 border-4 border-green-200">
-                    <div class="text-2xl mb-2">😊</div>
-                    <div class="font-bold text-green-600">You</div>
-                    <div class="text-3xl font-bold text-green-800" id="playerScore">0</div>
+                <div class="bg-blue-50 rounded-2xl p-4 border-4 border-blue-200">
+                    <div class="text-2xl mb-2">👤</div>
+                    <div class="font-bold text-blue-600">Player 1</div>
+                    <div class="text-4xl font-bold text-blue-800" id="player1Score">0</div>
                 </div>
-                <div class="bg-gray-50 rounded-2xl p-4 border-4 border-gray-200">
-                    <div class="text-2xl mb-2">🤝</div>
-                    <div class="font-bold text-gray-600">Ties</div>
-                    <div class="text-3xl font-bold text-gray-800" id="tieScore">0</div>
+                <div class="bg-purple-50 rounded-2xl p-4 border-4 border-purple-200">
+                    <div class="text-2xl mb-2">🎯</div>
+                    <div class="font-bold brand-purple">Round</div>
+                    <div class="text-4xl font-bold brand-purple" id="currentRound">1</div>
+                    <div class="text-sm text-gray-600">Best of 5</div>
                 </div>
                 <div class="bg-red-50 rounded-2xl p-4 border-4 border-red-200">
-                    <div class="text-2xl mb-2">🤖</div>
-                    <div class="font-bold text-red-600">Computer</div>
-                    <div class="text-3xl font-bold text-red-800" id="computerScore">0</div>
+                    <div class="text-2xl mb-2">👤</div>
+                    <div class="font-bold text-red-600">Player 2</div>
+                    <div class="text-4xl font-bold text-red-800" id="player2Score">0</div>
                 </div>
             </div>
         </div>
@@ -145,68 +174,131 @@
         <!-- Game Area -->
         <div class="bg-white bg-opacity-95 rounded-3xl p-8 shadow-2xl mb-6">
             
-            <!-- Battle Display -->
-            <div class="grid grid-cols-3 gap-8 items-center mb-8">
-                <!-- Player Choice -->
-                <div class="text-center">
-                    <div class="text-lg font-bold brand-purple mb-3">Your Choice</div>
-                    <div class="w-32 h-32 mx-auto bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl border-4 border-blue-300 flex items-center justify-center text-6xl glow-pulse" id="playerChoice">
-                        ❓
-                    </div>
-                </div>
-                
-                <!-- VS -->
-                <div class="text-center">
-                    <div class="text-4xl font-bold brand-purple animate-pulse">VS</div>
-                    <div id="battleAnimation" class="text-2xl mt-2">⚔️</div>
-                </div>
-                
-                <!-- Computer Choice -->
-                <div class="text-center">
-                    <div class="text-lg font-bold brand-purple mb-3">Computer Choice</div>
-                    <div class="w-32 h-32 mx-auto bg-gradient-to-br from-red-100 to-red-200 rounded-3xl border-4 border-red-300 flex items-center justify-center text-6xl" id="computerChoice">
-                        ❓
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Result Display -->
+            <!-- Countdown/Result Display -->
             <div class="text-center mb-8">
-                <div id="resultMessage" class="text-2xl font-bold brand-purple mb-4" style="font-family: 'Fredoka One', cursive;">
-                    Choose your move to start the battle!
+                <div id="countdownDisplay" class="text-6xl font-bold brand-purple mb-4 hidden" style="font-family: 'Fredoka One', cursive;">
+                    3
                 </div>
-                <div id="resultEmoji" class="text-6xl"></div>
+                <div id="resultMessage" class="text-3xl font-bold brand-purple mb-4" style="font-family: 'Fredoka One', cursive;">
+                    Choose your moves and get ready to battle!
+                </div>
+                <div id="resultEmoji" class="text-8xl"></div>
             </div>
             
-            <!-- Choice Buttons -->
-            <div id="choiceButtons" class="grid grid-cols-3 gap-6 max-w-2xl mx-auto">
-                <!-- Rock/Cat -->
-                <button class="choice-button bg-gradient-to-br from-orange-200 to-orange-300 hover:from-orange-300 hover:to-orange-400 rounded-3xl p-6 border-4 border-orange-400 shadow-lg hover:shadow-xl" onclick="playGame('rock')">
-                    <div class="text-6xl mb-3">🐱</div>
-                    <div class="text-xl font-bold text-orange-800">Cat</div>
-                    <div class="text-sm text-orange-600">Pounces on Bird</div>
-                </button>
+            <!-- Battle Arena -->
+            <div class="grid grid-cols-3 gap-8 items-center">
                 
-                <!-- Paper/Bird -->
-                <button class="choice-button bg-gradient-to-br from-blue-200 to-blue-300 hover:from-blue-300 hover:to-blue-400 rounded-3xl p-6 border-4 border-blue-400 shadow-lg hover:shadow-xl" onclick="playGame('paper')">
-                    <div class="text-6xl mb-3">🐦</div>
-                    <div class="text-xl font-bold text-blue-800">Bird</div>
-                    <div class="text-sm text-blue-600">Flies over Dog</div>
-                </button>
+                <!-- Player 1 Area -->
+                <div class="player-area bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl p-6 border-4 border-blue-300">
+                    <h3 class="text-2xl font-bold text-blue-800 text-center mb-6">Player 1</h3>
+                    
+                    <!-- Player 1 Choice Display -->
+                    <div class="text-center mb-6">
+                        <div class="w-32 h-32 mx-auto bg-gradient-to-br from-blue-200 to-blue-300 rounded-3xl border-4 border-blue-400 flex items-center justify-center text-6xl glow-pulse" id="player1Choice">
+                            ❓
+                        </div>
+                        <div class="mt-3 text-lg font-bold text-blue-700" id="player1Status">Choose your move!</div>
+                    </div>
+                    
+                    <!-- Player 1 Buttons -->
+                    <div id="player1Buttons" class="space-y-3">
+                        <button class="choice-button w-full bg-gradient-to-br from-orange-200 to-orange-300 hover:from-orange-300 hover:to-orange-400 rounded-2xl p-4 border-4 border-orange-400 shadow-lg hover:shadow-xl" onclick="selectChoice(1, 'rock')">
+                            <div class="flex items-center justify-center space-x-3">
+                                <div class="text-3xl">🪨</div>
+                                <div class="text-xl font-bold text-orange-800">Rock</div>
+                            </div>
+                        </button>
+                        
+                        <button class="choice-button w-full bg-gradient-to-br from-blue-200 to-blue-300 hover:from-blue-300 hover:to-blue-400 rounded-2xl p-4 border-4 border-blue-400 shadow-lg hover:shadow-xl" onclick="selectChoice(1, 'paper')">
+                            <div class="flex items-center justify-center space-x-3">
+                                <div class="text-3xl">📄</div>
+                                <div class="text-xl font-bold text-blue-800">Paper</div>
+                            </div>
+                        </button>
+                        
+                        <button class="choice-button w-full bg-gradient-to-br from-green-200 to-green-300 hover:from-green-300 hover:to-green-400 rounded-2xl p-4 border-4 border-green-400 shadow-lg hover:shadow-xl" onclick="selectChoice(1, 'scissors')">
+                            <div class="flex items-center justify-center space-x-3">
+                                <div class="text-3xl">✂️</div>
+                                <div class="text-xl font-bold text-green-800">Scissors</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
                 
-                <!-- Scissors/Dog -->
-                <button class="choice-button bg-gradient-to-br from-green-200 to-green-300 hover:from-green-300 hover:to-green-400 rounded-3xl p-6 border-4 border-green-400 shadow-lg hover:shadow-xl" onclick="playGame('scissors')">
-                    <div class="text-6xl mb-3">🐕</div>
-                    <div class="text-xl font-bold text-green-800">Dog</div>
-                    <div class="text-sm text-green-600">Chases Cat</div>
+                <!-- VS Section -->
+                <div class="text-center">
+                    <div class="vs-divider mx-auto mb-4" style="height: 200px;"></div>
+                    <div class="text-5xl font-bold brand-purple animate-pulse mb-4" style="font-family: 'Fredoka One', cursive;">VS</div>
+                    <div id="battleAnimation" class="text-4xl">⚔️</div>
+                    <div class="vs-divider mx-auto mt-4" style="height: 200px;"></div>
+                </div>
+                
+                <!-- Player 2 Area -->
+                <div class="player-area bg-gradient-to-br from-red-50 to-red-100 rounded-3xl p-6 border-4 border-red-300">
+                    <h3 class="text-2xl font-bold text-red-800 text-center mb-6">Player 2</h3>
+                    
+                    <!-- Player 2 Choice Display -->
+                    <div class="text-center mb-6">
+                        <div class="w-32 h-32 mx-auto bg-gradient-to-br from-red-200 to-red-300 rounded-3xl border-4 border-red-400 flex items-center justify-center text-6xl glow-pulse" id="player2Choice">
+                            ❓
+                        </div>
+                        <div class="mt-3 text-lg font-bold text-red-700" id="player2Status">Choose your move!</div>
+                    </div>
+                    
+                    <!-- Player 2 Buttons -->
+                    <div id="player2Buttons" class="space-y-3">
+                        <button class="choice-button w-full bg-gradient-to-br from-orange-200 to-orange-300 hover:from-orange-300 hover:to-orange-400 rounded-2xl p-4 border-4 border-orange-400 shadow-lg hover:shadow-xl" onclick="selectChoice(2, 'rock')">
+                            <div class="flex items-center justify-center space-x-3">
+                                <div class="text-3xl">🪨</div>
+                                <div class="text-xl font-bold text-orange-800">Rock</div>
+                            </div>
+                        </button>
+                        
+                        <button class="choice-button w-full bg-gradient-to-br from-blue-200 to-blue-300 hover:from-blue-300 hover:to-blue-400 rounded-2xl p-4 border-4 border-blue-400 shadow-lg hover:shadow-xl" onclick="selectChoice(2, 'paper')">
+                            <div class="flex items-center justify-center space-x-3">
+                                <div class="text-3xl">📄</div>
+                                <div class="text-xl font-bold text-blue-800">Paper</div>
+                            </div>
+                        </button>
+                        
+                        <button class="choice-button w-full bg-gradient-to-br from-green-200 to-green-300 hover:from-green-300 hover:to-green-400 rounded-2xl p-4 border-4 border-green-400 shadow-lg hover:shadow-xl" onclick="selectChoice(2, 'scissors')">
+                            <div class="flex items-center justify-center space-x-3">
+                                <div class="text-3xl">✂️</div>
+                                <div class="text-xl font-bold text-green-800">Scissors</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Battle Button -->
+            <div class="text-center mt-8">
+                <button id="battleButton" onclick="startBattle()" class="bg-brand-purple hover:bg-purple-700 text-white font-bold py-4 px-12 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 text-2xl hidden" style="font-family: 'Fredoka One', cursive;">
+                    ⚔️ BATTLE!
                 </button>
             </div>
         </div>
         
         <!-- Control Buttons -->
         <div class="text-center space-y-4">
-            <button onclick="resetScores()" class="bg-brand-purple hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 text-lg">
-                🔄 Reset Scores
+            <button onclick="resetGame()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 text-lg">
+                🔄 New Game
+            </button>
+        </div>
+    </div>
+    
+    <!-- Winner Modal -->
+    <div id="winnerModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-3xl p-8 max-w-md mx-4 text-center shadow-2xl">
+            <div id="winnerEmoji" class="text-8xl mb-4">🏆</div>
+            <h2 id="winnerTitle" class="text-3xl font-bold brand-purple mb-4" style="font-family: 'Fredoka One', cursive;">
+                Player 1 Wins!
+            </h2>
+            <p id="winnerMessage" class="text-lg text-gray-700 mb-6">
+                Congratulations on your victory!
+            </p>
+            <button onclick="closeWinnerModal()" class="bg-brand-purple hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                🎉 Play Again
             </button>
         </div>
     </div>
@@ -219,48 +311,56 @@
         <div class="fixed bottom-40 right-10 text-3xl float-animation opacity-60" style="animation-delay: 3s;">✨</div>
     </div>
     
+    <!-- Confetti Container -->
+    <div id="confettiContainer" class="fixed inset-0 pointer-events-none z-40"></div>
+    
     <script>
-        let playerScore = 0;
-        let computerScore = 0;
-        let tieScore = 0;
         let currentTheme = 'animals';
+        let gameState = {
+            player1Choice: null,
+            player2Choice: null,
+            player1Score: 0,
+            player2Score: 0,
+            currentRound: 1,
+            maxRounds: 5
+        };
         
         const themes = {
             animals: {
                 title: '🐾 Animal Rock Paper Scissors 🐾',
-                subtitle: 'Choose your move!',
+                subtitle: 'Player vs Player Battle!',
                 ageGroup: 'Perfect for ages 5-7',
                 bodyClass: 'theme-animals',
-                choices: {
-                    rock: { emoji: '🪨', name: 'Rock', description: 'Crushes Scissors', colors: 'from-orange-200 to-orange-300 hover:from-orange-300 hover:to-orange-400 border-orange-400 text-orange-800' },
-                    paper: { emoji: '📄', name: 'Paper', description: 'Covers Rock', colors: 'from-blue-200 to-blue-300 hover:from-blue-300 hover:to-blue-400 border-blue-400 text-blue-800' },
-                    scissors: { emoji: '✂️', name: 'Scissors', description: 'Cuts Paper', colors: 'from-green-200 to-green-300 hover:from-green-300 hover:to-green-400 border-green-400 text-green-800' }
-                },
-                decorations: ['🌟', '🎈', '🎊', '✨']
+                decorations: ['🌟', '🎈', '🎊', '✨'],
+                icons: {
+                    rock: '🪨',
+                    paper: '📄',
+                    scissors: '✂️'
+                }
             },
             space: {
                 title: '🚀 Space Rock Paper Scissors 🚀',
-                subtitle: 'Choose your move!',
+                subtitle: 'Player vs Player Battle!',
                 ageGroup: 'Perfect for ages 7-9',
                 bodyClass: 'theme-space',
-                choices: {
-                    rock: { emoji: '🪨', name: 'Rock', description: 'Crushes Scissors', colors: 'from-purple-200 to-purple-300 hover:from-purple-300 hover:to-purple-400 border-purple-400 text-purple-800' },
-                    paper: { emoji: '📄', name: 'Paper', description: 'Covers Rock', colors: 'from-cyan-200 to-cyan-300 hover:from-cyan-300 hover:to-cyan-400 border-cyan-400 text-cyan-800' },
-                    scissors: { emoji: '✂️', name: 'Scissors', description: 'Cuts Paper', colors: 'from-red-200 to-red-300 hover:from-red-300 hover:to-red-400 border-red-400 text-red-800' }
-                },
-                decorations: ['⭐', '🌟', '✨', '🌙']
+                decorations: ['⭐', '🌟', '✨', '🌙'],
+                icons: {
+                    rock: '🪨',
+                    paper: '📄',
+                    scissors: '✂️'
+                }
             },
             gaming: {
                 title: '🎮 Gaming Rock Paper Scissors 🎮',
-                subtitle: 'Choose your move!',
+                subtitle: 'Player vs Player Battle!',
                 ageGroup: 'Perfect for ages 10-14',
                 bodyClass: 'theme-gaming',
-                choices: {
-                    rock: { emoji: '🪨', name: 'Rock', description: 'Crushes Scissors', colors: 'from-red-200 to-red-300 hover:from-red-300 hover:to-red-400 border-red-400 text-red-800' },
-                    paper: { emoji: '📄', name: 'Paper', description: 'Covers Rock', colors: 'from-blue-200 to-blue-300 hover:from-blue-300 hover:to-blue-400 border-blue-400 text-blue-800' },
-                    scissors: { emoji: '✂️', name: 'Scissors', description: 'Cuts Paper', colors: 'from-purple-200 to-purple-300 hover:from-purple-300 hover:to-purple-400 border-purple-400 text-purple-800' }
-                },
-                decorations: ['⚡', '💎', '🔥', '💫']
+                decorations: ['⚡', '💎', '🔥', '💫'],
+                icons: {
+                    rock: '🪨',
+                    paper: '📄',
+                    scissors: '✂️'
+                }
             }
         };
         
@@ -276,39 +376,11 @@
             // Update body class
             document.getElementById('gameBody').className = `min-h-screen theme-transition ${theme.bodyClass}`;
             
-            // Update choice buttons
-            updateChoiceButtons();
-            
             // Update decorations
             updateDecorations();
             
-            // Reset game state
-            resetGame();
-        }
-        
-        function updateChoiceButtons() {
-            const theme = themes[currentTheme];
-            const buttonsContainer = document.getElementById('choiceButtons');
-            
-            buttonsContainer.innerHTML = `
-                <button class="choice-button bg-gradient-to-br ${theme.choices.rock.colors} rounded-3xl p-6 border-4 shadow-lg hover:shadow-xl" onclick="playGame('rock')">
-                    <div class="text-6xl mb-3">${theme.choices.rock.emoji}</div>
-                    <div class="text-xl font-bold">${theme.choices.rock.name}</div>
-                    <div class="text-sm opacity-70">${theme.choices.rock.description}</div>
-                </button>
-                
-                <button class="choice-button bg-gradient-to-br ${theme.choices.paper.colors} rounded-3xl p-6 border-4 shadow-lg hover:shadow-xl" onclick="playGame('paper')">
-                    <div class="text-6xl mb-3">${theme.choices.paper.emoji}</div>
-                    <div class="text-xl font-bold">${theme.choices.paper.name}</div>
-                    <div class="text-sm opacity-70">${theme.choices.paper.description}</div>
-                </button>
-                
-                <button class="choice-button bg-gradient-to-br ${theme.choices.scissors.colors} rounded-3xl p-6 border-4 shadow-lg hover:shadow-xl" onclick="playGame('scissors')">
-                    <div class="text-6xl mb-3">${theme.choices.scissors.emoji}</div>
-                    <div class="text-xl font-bold">${theme.choices.scissors.name}</div>
-                    <div class="text-sm opacity-70">${theme.choices.scissors.description}</div>
-                </button>
-            `;
+            // Update button icons
+            updateButtonIcons();
         }
         
         function updateDecorations() {
@@ -323,104 +395,296 @@
             `;
         }
         
-        function playGame(playerChoice) {
-            const choices = ['rock', 'paper', 'scissors'];
-            const computerChoice = choices[Math.floor(Math.random() * 3)];
-            
+        function updateButtonIcons() {
             const theme = themes[currentTheme];
             
-            // Update display
-            document.getElementById('playerChoice').textContent = theme.choices[playerChoice].emoji;
-            document.getElementById('playerChoice').classList.add('bounce-in');
+            // Update all rock buttons
+            document.querySelectorAll('button[onclick*="rock"]').forEach(btn => {
+                const iconElement = btn.querySelector('div:first-child');
+                if (iconElement) iconElement.textContent = theme.icons.rock;
+            });
             
-            // Animate computer thinking
-            let thinkingCount = 0;
-            const thinkingInterval = setInterval(() => {
-                const randomChoice = choices[Math.floor(Math.random() * 3)];
-                document.getElementById('computerChoice').textContent = theme.choices[randomChoice].emoji;
-                thinkingCount++;
+            // Update all paper buttons
+            document.querySelectorAll('button[onclick*="paper"]').forEach(btn => {
+                const iconElement = btn.querySelector('div:first-child');
+                if (iconElement) iconElement.textContent = theme.icons.paper;
+            });
+            
+            // Update all scissors buttons
+            document.querySelectorAll('button[onclick*="scissors"]').forEach(btn => {
+                const iconElement = btn.querySelector('div:first-child');
+                if (iconElement) iconElement.textContent = theme.icons.scissors;
+            });
+        }
+        
+        function selectChoice(player, choice) {
+            if (player === 1) {
+                gameState.player1Choice = choice;
+                document.getElementById('player1Status').textContent = 'Choice locked in! ✓';
                 
-                if (thinkingCount >= 6) {
-                    clearInterval(thinkingInterval);
-                    document.getElementById('computerChoice').textContent = theme.choices[computerChoice].emoji;
-                    document.getElementById('computerChoice').classList.add('bounce-in');
-                    
-                    // Determine winner
-                    setTimeout(() => {
-                        determineWinner(playerChoice, computerChoice);
-                    }, 500);
-                }
-            }, 200);
+                // Highlight selected button but keep choice hidden
+                document.querySelectorAll('#player1Buttons button').forEach(btn => {
+                    btn.classList.remove('ring-4', 'ring-yellow-400');
+                });
+                event.target.closest('button').classList.add('ring-4', 'ring-yellow-400');
+                
+            } else {
+                gameState.player2Choice = choice;
+                document.getElementById('player2Status').textContent = 'Choice locked in! ✓';
+                
+                // Highlight selected button but keep choice hidden
+                document.querySelectorAll('#player2Buttons button').forEach(btn => {
+                    btn.classList.remove('ring-4', 'ring-yellow-400');
+                });
+                event.target.closest('button').classList.add('ring-4', 'ring-yellow-400');
+            }
             
-            // Remove animation classes
+            // Show battle button if both players have chosen
+            if (gameState.player1Choice && gameState.player2Choice) {
+                document.getElementById('battleButton').classList.remove('hidden');
+                document.getElementById('resultMessage').textContent = 'Both players ready! Click BATTLE to reveal!';
+            }
+        }
+        
+        function startBattle() {
+            // Hide battle button
+            document.getElementById('battleButton').classList.add('hidden');
+            
+            // Disable all buttons
+            document.querySelectorAll('.choice-button').forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('opacity-50');
+            });
+            
+            // Start countdown
+            startCountdown();
+        }
+        
+        function startCountdown() {
+            const countdownDisplay = document.getElementById('countdownDisplay');
+            const resultMessage = document.getElementById('resultMessage');
+            
+            countdownDisplay.classList.remove('hidden');
+            resultMessage.textContent = 'Get ready for battle!';
+            
+            let count = 3;
+            
+            const countdownInterval = setInterval(() => {
+                countdownDisplay.textContent = count;
+                countdownDisplay.classList.add('countdown-animation');
+                
+                setTimeout(() => {
+                    countdownDisplay.classList.remove('countdown-animation');
+                }, 1000);
+                
+                count--;
+                
+                if (count < 0) {
+                    clearInterval(countdownInterval);
+                    countdownDisplay.textContent = 'SHOW!';
+                    countdownDisplay.classList.add('countdown-animation');
+                    
+                    // Reveal choices when "SHOW!" appears
+                    revealChoices();
+                    
+                    setTimeout(() => {
+                        countdownDisplay.classList.add('hidden');
+                        revealResults();
+                    }, 1000);
+                }
+            }, 1200);
+        }
+        
+        function revealChoices() {
+            const theme = themes[currentTheme];
+            
+            // Reveal both players' choices with animation
+            document.getElementById('player1Choice').textContent = theme.icons[gameState.player1Choice];
+            document.getElementById('player1Choice').classList.add('bounce-in');
+            
+            document.getElementById('player2Choice').textContent = theme.icons[gameState.player2Choice];
+            document.getElementById('player2Choice').classList.add('bounce-in');
+            
+            // Remove animation classes after animation
             setTimeout(() => {
-                document.getElementById('playerChoice').classList.remove('bounce-in');
-                document.getElementById('computerChoice').classList.remove('bounce-in');
+                document.getElementById('player1Choice').classList.remove('bounce-in');
+                document.getElementById('player2Choice').classList.remove('bounce-in');
             }, 800);
         }
         
-        function determineWinner(playerChoice, computerChoice) {
+        function revealResults() {
             const theme = themes[currentTheme];
+            const p1Choice = gameState.player1Choice;
+            const p2Choice = gameState.player2Choice;
+            
             let result = '';
             let emoji = '';
+            let winner = null;
             
-            if (playerChoice === computerChoice) {
-                result = `It's a tie! Both chose ${theme.choices[playerChoice].name}`;
+            if (p1Choice === p2Choice) {
+                result = "It's a tie! Both players chose the same!";
                 emoji = '🤝';
-                tieScore++;
-                document.getElementById('tieScore').textContent = tieScore;
             } else if (
-                (playerChoice === 'rock' && computerChoice === 'scissors') ||
-                (playerChoice === 'paper' && computerChoice === 'rock') ||
-                (playerChoice === 'scissors' && computerChoice === 'paper')
+                (p1Choice === 'rock' && p2Choice === 'scissors') ||
+                (p1Choice === 'paper' && p2Choice === 'rock') ||
+                (p1Choice === 'scissors' && p2Choice === 'paper')
             ) {
-                result = `You win! ${theme.choices[playerChoice].name} beats ${theme.choices[computerChoice].name}!`;
+                result = 'Player 1 wins this round!';
                 emoji = '🎉';
-                playerScore++;
-                document.getElementById('playerScore').textContent = playerScore;
+                winner = 1;
+                gameState.player1Score++;
+                document.getElementById('player1Score').textContent = gameState.player1Score;
                 
                 // Add celebration effect
-                document.getElementById('playerChoice').classList.add('shake');
+                document.getElementById('player1Choice').classList.add('shake');
                 setTimeout(() => {
-                    document.getElementById('playerChoice').classList.remove('shake');
+                    document.getElementById('player1Choice').classList.remove('shake');
                 }, 600);
-            } else {
-                result = `Computer wins! ${theme.choices[computerChoice].name} beats ${theme.choices[playerChoice].name}!`;
-                emoji = '😅';
-                computerScore++;
-                document.getElementById('computerScore').textContent = computerScore;
                 
-                // Add defeat effect
-                document.getElementById('computerChoice').classList.add('shake');
+            } else {
+                result = 'Player 2 wins this round!';
+                emoji = '🎉';
+                winner = 2;
+                gameState.player2Score++;
+                document.getElementById('player2Score').textContent = gameState.player2Score;
+                
+                // Add celebration effect
+                document.getElementById('player2Choice').classList.add('shake');
                 setTimeout(() => {
-                    document.getElementById('computerChoice').classList.remove('shake');
+                    document.getElementById('player2Choice').classList.remove('shake');
                 }, 600);
             }
             
             document.getElementById('resultMessage').textContent = result;
             document.getElementById('resultEmoji').textContent = emoji;
+            
+            // Create confetti if someone won
+            if (winner) {
+                createConfetti();
+            }
+            
+            // Check if game is over
+            setTimeout(() => {
+                if (gameState.player1Score >= 3 || gameState.player2Score >= 3 || gameState.currentRound >= gameState.maxRounds) {
+                    endGame();
+                } else {
+                    nextRound();
+                }
+            }, 3000);
+        }
+        
+        function createConfetti() {
+            const container = document.getElementById('confettiContainer');
+            const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti absolute w-3 h-3 rounded-full';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.animationDelay = Math.random() * 3 + 's';
+                container.appendChild(confetti);
+                
+                setTimeout(() => {
+                    confetti.remove();
+                }, 3000);
+            }
+        }
+        
+        function nextRound() {
+            gameState.currentRound++;
+            document.getElementById('currentRound').textContent = gameState.currentRound;
+            
+            // Reset choices
+            gameState.player1Choice = null;
+            gameState.player2Choice = null;
+            
+            // Reset UI
+            document.getElementById('player1Choice').textContent = '❓';
+            document.getElementById('player2Choice').textContent = '❓';
+            document.getElementById('player1Status').textContent = 'Choose your move!';
+            document.getElementById('player2Status').textContent = 'Choose your move!';
+            document.getElementById('resultMessage').textContent = 'Choose your moves for the next round!';
+            document.getElementById('resultEmoji').textContent = '';
+            
+            // Re-enable buttons
+            document.querySelectorAll('.choice-button').forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'ring-4', 'ring-yellow-400');
+            });
+        }
+        
+        function endGame() {
+            let winnerText = '';
+            let winnerEmoji = '🏆';
+            let winnerMessage = '';
+            
+            if (gameState.player1Score > gameState.player2Score) {
+                winnerText = 'Player 1 Wins!';
+                winnerMessage = `Congratulations Player 1! You won ${gameState.player1Score} out of ${gameState.currentRound} rounds!`;
+                winnerEmoji = '🥇';
+            } else if (gameState.player2Score > gameState.player1Score) {
+                winnerText = 'Player 2 Wins!';
+                winnerMessage = `Congratulations Player 2! You won ${gameState.player2Score} out of ${gameState.currentRound} rounds!`;
+                winnerEmoji = '🥇';
+            } else {
+                winnerText = "It's a Tie!";
+                winnerMessage = `Amazing game! Both players scored ${gameState.player1Score} points!`;
+                winnerEmoji = '🤝';
+            }
+            
+            document.getElementById('winnerTitle').textContent = winnerText;
+            document.getElementById('winnerMessage').textContent = winnerMessage;
+            document.getElementById('winnerEmoji').textContent = winnerEmoji;
+            document.getElementById('winnerModal').classList.remove('hidden');
+            
+            // Create big confetti celebration
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => createConfetti(), i * 500);
+            }
+        }
+        
+        function closeWinnerModal() {
+            document.getElementById('winnerModal').classList.add('hidden');
+            resetGame();
         }
         
         function resetGame() {
-            document.getElementById('playerChoice').textContent = '❓';
-            document.getElementById('computerChoice').textContent = '❓';
-            document.getElementById('resultMessage').textContent = 'Choose your move to start the battle!';
+            // Reset game state
+            gameState = {
+                player1Choice: null,
+                player2Choice: null,
+                player1Score: 0,
+                player2Score: 0,
+                currentRound: 1,
+                maxRounds: 5
+            };
+            
+            // Reset UI
+            document.getElementById('player1Score').textContent = '0';
+            document.getElementById('player2Score').textContent = '0';
+            document.getElementById('currentRound').textContent = '1';
+            document.getElementById('player1Choice').textContent = '❓';
+            document.getElementById('player2Choice').textContent = '❓';
+            document.getElementById('player1Status').textContent = 'Choose your move!';
+            document.getElementById('player2Status').textContent = 'Choose your move!';
+            document.getElementById('resultMessage').textContent = 'Choose your moves and get ready to battle!';
             document.getElementById('resultEmoji').textContent = '';
-        }
-        
-        function resetScores() {
-            playerScore = 0;
-            computerScore = 0;
-            tieScore = 0;
-            document.getElementById('playerScore').textContent = '0';
-            document.getElementById('computerScore').textContent = '0';
-            document.getElementById('tieScore').textContent = '0';
-            resetGame();
+            document.getElementById('battleButton').classList.add('hidden');
+            
+            // Re-enable buttons
+            document.querySelectorAll('.choice-button').forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'ring-4', 'ring-yellow-400');
+            });
+            
+            // Clear confetti
+            document.getElementById('confettiContainer').innerHTML = '';
         }
         
         // Initialize with animals theme
         changeTheme('animals');
     </script>
     
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96c10e819706b2af',t:'MTc1NDY3NzUzMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96c12d92201e7eb8',t:'MTc1NDY3ODgwMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

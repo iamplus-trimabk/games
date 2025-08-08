@@ -422,21 +422,19 @@
                 gameState.player1Choice = choice;
                 document.getElementById('player1Status').textContent = 'Choice locked in! ✓';
                 
-                // Highlight selected button but keep choice hidden
+                // Remove any previous highlights - keep selection completely secret
                 document.querySelectorAll('#player1Buttons button').forEach(btn => {
                     btn.classList.remove('ring-4', 'ring-yellow-400');
                 });
-                event.target.closest('button').classList.add('ring-4', 'ring-yellow-400');
                 
             } else {
                 gameState.player2Choice = choice;
                 document.getElementById('player2Status').textContent = 'Choice locked in! ✓';
                 
-                // Highlight selected button but keep choice hidden
+                // Remove any previous highlights - keep selection completely secret
                 document.querySelectorAll('#player2Buttons button').forEach(btn => {
                     btn.classList.remove('ring-4', 'ring-yellow-400');
                 });
-                event.target.closest('button').classList.add('ring-4', 'ring-yellow-400');
             }
             
             // Show battle button if both players have chosen
@@ -686,5 +684,5 @@
         changeTheme('animals');
     </script>
     
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96c12d92201e7eb8',t:'MTc1NDY3ODgwMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96c13461f37c178d',t:'MTc1NDY3OTA4MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kids Rock Paper Scissors</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Nunito:wght@400;600;700&family=Comic+Neue:wght@400;700&display=swap');
+        
+        :root {
+            --brand-purple: #7B54FA;
+            --brand-purple-light: #9B7BFF;
+            --brand-purple-dark: #5B34DA;
+        }
+        
+        .brand-purple { color: var(--brand-purple); }
+        .bg-brand-purple { background-color: var(--brand-purple); }
+        .border-brand-purple { border-color: var(--brand-purple); }
+        
+        .bounce-in {
+            animation: bounceIn 0.8s ease-out;
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: scale(0) rotate(0deg); }
+            50% { transform: scale(1.3) rotate(180deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+        
+        .shake {
+            animation: shake 0.6s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px) rotate(-5deg); }
+            75% { transform: translateX(10px) rotate(5deg); }
+        }
+        
+        .glow-pulse {
+            animation: glowPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(123, 84, 250, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(123, 84, 250, 0.6); }
+        }
+        
+        .float-animation {
+            animation: floatAnimation 3s ease-in-out infinite;
+        }
+        
+        @keyframes floatAnimation {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+        
+        .choice-button {
+            transition: all 0.3s ease;
+        }
+        
+        .choice-button:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        .choice-button:active {
+            transform: scale(0.95);
+        }
+        
+        .theme-transition {
+            transition: all 0.5s ease-in-out;
+        }
+        
+        /* Theme-specific styles */
+        .theme-animals {
+            background: linear-gradient(135deg, #FFE5B4 0%, #FFCCCB 50%, #E6E6FA 100%);
+        }
+        
+        .theme-space {
+            background: linear-gradient(135deg, #000428 0%, #004e92 50%, #7B54FA 100%);
+        }
+        
+        .theme-gaming {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #7B54FA 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen theme-transition" id="gameBody">
+    
+    <!-- Theme Selector -->
+    <div class="fixed top-4 right-4 z-50">
+        <div class="bg-white rounded-2xl p-3 shadow-lg">
+            <div class="text-xs font-semibold text-gray-600 mb-2 text-center">Choose Theme:</div>
+            <div class="flex space-x-2">
+                <button onclick="changeTheme('animals')" class="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-200 to-pink-200 flex items-center justify-center text-xl hover:scale-110 transition-transform" title="5-7 Years: Animals">
+                    🐱
+                </button>
+                <button onclick="changeTheme('space')" class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-900 to-purple-600 flex items-center justify-center text-xl hover:scale-110 transition-transform" title="7-9 Years: Space">
+                    🚀
+                </button>
+                <button onclick="changeTheme('gaming')" class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-800 to-purple-600 flex items-center justify-center text-xl hover:scale-110 transition-transform" title="10-14 Years: Gaming">
+                    🎮
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Header -->
+    <div class="text-center py-6">
+        <h1 id="gameTitle" class="text-4xl md:text-5xl font-bold text-white mb-2" style="font-family: 'Fredoka One', cursive;">
+            🐾 Animal Battle 🐾
+        </h1>
+        <p id="gameSubtitle" class="text-white text-lg font-semibold">Choose your animal friend!</p>
+        <div id="ageGroup" class="text-white text-sm opacity-80 mt-1">Perfect for ages 5-7</div>
+    </div>
+    
+    <!-- Game Container -->
+    <div class="max-w-4xl mx-auto px-4">
+        
+        <!-- Score Board -->
+        <div class="bg-white bg-opacity-95 rounded-3xl p-6 mb-6 shadow-2xl">
+            <h3 class="text-2xl font-bold text-center brand-purple mb-4" style="font-family: 'Fredoka One', cursive;">
+                🏆 Score Board 🏆
+            </h3>
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <div class="bg-green-50 rounded-2xl p-4 border-4 border-green-200">
+                    <div class="text-2xl mb-2">😊</div>
+                    <div class="font-bold text-green-600">You</div>
+                    <div class="text-3xl font-bold text-green-800" id="playerScore">0</div>
+                </div>
+                <div class="bg-gray-50 rounded-2xl p-4 border-4 border-gray-200">
+                    <div class="text-2xl mb-2">🤝</div>
+                    <div class="font-bold text-gray-600">Ties</div>
+                    <div class="text-3xl font-bold text-gray-800" id="tieScore">0</div>
+                </div>
+                <div class="bg-red-50 rounded-2xl p-4 border-4 border-red-200">
+                    <div class="text-2xl mb-2">🤖</div>
+                    <div class="font-bold text-red-600">Computer</div>
+                    <div class="text-3xl font-bold text-red-800" id="computerScore">0</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Game Area -->
+        <div class="bg-white bg-opacity-95 rounded-3xl p-8 shadow-2xl mb-6">
+            
+            <!-- Battle Display -->
+            <div class="grid grid-cols-3 gap-8 items-center mb-8">
+                <!-- Player Choice -->
+                <div class="text-center">
+                    <div class="text-lg font-bold brand-purple mb-3">Your Choice</div>
+                    <div class="w-32 h-32 mx-auto bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl border-4 border-blue-300 flex items-center justify-center text-6xl glow-pulse" id="playerChoice">
+                        ❓
+                    </div>
+                </div>
+                
+                <!-- VS -->
+                <div class="text-center">
+                    <div class="text-4xl font-bold brand-purple animate-pulse">VS</div>
+                    <div id="battleAnimation" class="text-2xl mt-2">⚔️</div>
+                </div>
+                
+                <!-- Computer Choice -->
+                <div class="text-center">
+                    <div class="text-lg font-bold brand-purple mb-3">Computer Choice</div>
+                    <div class="w-32 h-32 mx-auto bg-gradient-to-br from-red-100 to-red-200 rounded-3xl border-4 border-red-300 flex items-center justify-center text-6xl" id="computerChoice">
+                        ❓
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Result Display -->
+            <div class="text-center mb-8">
+                <div id="resultMessage" class="text-2xl font-bold brand-purple mb-4" style="font-family: 'Fredoka One', cursive;">
+                    Choose your move to start the battle!
+                </div>
+                <div id="resultEmoji" class="text-6xl"></div>
+            </div>
+            
+            <!-- Choice Buttons -->
+            <div id="choiceButtons" class="grid grid-cols-3 gap-6 max-w-2xl mx-auto">
+                <!-- Rock/Cat -->
+                <button class="choice-button bg-gradient-to-br from-orange-200 to-orange-300 hover:from-orange-300 hover:to-orange-400 rounded-3xl p-6 border-4 border-orange-400 shadow-lg hover:shadow-xl" onclick="playGame('rock')">
+                    <div class="text-6xl mb-3">🐱</div>
+                    <div class="text-xl font-bold text-orange-800">Cat</div>
+                    <div class="text-sm text-orange-600">Pounces on Bird</div>
+                </button>
+                
+                <!-- Paper/Bird -->
+                <button class="choice-button bg-gradient-to-br from-blue-200 to-blue-300 hover:from-blue-300 hover:to-blue-400 rounded-3xl p-6 border-4 border-blue-400 shadow-lg hover:shadow-xl" onclick="playGame('paper')">
+                    <div class="text-6xl mb-3">🐦</div>
+                    <div class="text-xl font-bold text-blue-800">Bird</div>
+                    <div class="text-sm text-blue-600">Flies over Dog</div>
+                </button>
+                
+                <!-- Scissors/Dog -->
+                <button class="choice-button bg-gradient-to-br from-green-200 to-green-300 hover:from-green-300 hover:to-green-400 rounded-3xl p-6 border-4 border-green-400 shadow-lg hover:shadow-xl" onclick="playGame('scissors')">
+                    <div class="text-6xl mb-3">🐕</div>
+                    <div class="text-xl font-bold text-green-800">Dog</div>
+                    <div class="text-sm text-green-600">Chases Cat</div>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Control Buttons -->
+        <div class="text-center space-y-4">
+            <button onclick="resetScores()" class="bg-brand-purple hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 text-lg">
+                🔄 Reset Scores
+            </button>
+        </div>
+    </div>
+    
+    <!-- Floating Decorations -->
+    <div id="floatingDecorations">
+        <div class="fixed top-20 left-10 text-4xl float-animation opacity-60">🌟</div>
+        <div class="fixed top-40 right-20 text-3xl float-animation opacity-60" style="animation-delay: 1s;">🎈</div>
+        <div class="fixed bottom-20 left-20 text-4xl float-animation opacity-60" style="animation-delay: 2s;">🎊</div>
+        <div class="fixed bottom-40 right-10 text-3xl float-animation opacity-60" style="animation-delay: 3s;">✨</div>
+    </div>
+    
+    <script>
+        let playerScore = 0;
+        let computerScore = 0;
+        let tieScore = 0;
+        let currentTheme = 'animals';
+        
+        const themes = {
+            animals: {
+                title: '🐾 Animal Rock Paper Scissors 🐾',
+                subtitle: 'Choose your move!',
+                ageGroup: 'Perfect for ages 5-7',
+                bodyClass: 'theme-animals',
+                choices: {
+                    rock: { emoji: '🪨', name: 'Rock', description: 'Crushes Scissors', colors: 'from-orange-200 to-orange-300 hover:from-orange-300 hover:to-orange-400 border-orange-400 text-orange-800' },
+                    paper: { emoji: '📄', name: 'Paper', description: 'Covers Rock', colors: 'from-blue-200 to-blue-300 hover:from-blue-300 hover:to-blue-400 border-blue-400 text-blue-800' },
+                    scissors: { emoji: '✂️', name: 'Scissors', description: 'Cuts Paper', colors: 'from-green-200 to-green-300 hover:from-green-300 hover:to-green-400 border-green-400 text-green-800' }
+                },
+                decorations: ['🌟', '🎈', '🎊', '✨']
+            },
+            space: {
+                title: '🚀 Space Rock Paper Scissors 🚀',
+                subtitle: 'Choose your move!',
+                ageGroup: 'Perfect for ages 7-9',
+                bodyClass: 'theme-space',
+                choices: {
+                    rock: { emoji: '🪨', name: 'Rock', description: 'Crushes Scissors', colors: 'from-purple-200 to-purple-300 hover:from-purple-300 hover:to-purple-400 border-purple-400 text-purple-800' },
+                    paper: { emoji: '📄', name: 'Paper', description: 'Covers Rock', colors: 'from-cyan-200 to-cyan-300 hover:from-cyan-300 hover:to-cyan-400 border-cyan-400 text-cyan-800' },
+                    scissors: { emoji: '✂️', name: 'Scissors', description: 'Cuts Paper', colors: 'from-red-200 to-red-300 hover:from-red-300 hover:to-red-400 border-red-400 text-red-800' }
+                },
+                decorations: ['⭐', '🌟', '✨', '🌙']
+            },
+            gaming: {
+                title: '🎮 Gaming Rock Paper Scissors 🎮',
+                subtitle: 'Choose your move!',
+                ageGroup: 'Perfect for ages 10-14',
+                bodyClass: 'theme-gaming',
+                choices: {
+                    rock: { emoji: '🪨', name: 'Rock', description: 'Crushes Scissors', colors: 'from-red-200 to-red-300 hover:from-red-300 hover:to-red-400 border-red-400 text-red-800' },
+                    paper: { emoji: '📄', name: 'Paper', description: 'Covers Rock', colors: 'from-blue-200 to-blue-300 hover:from-blue-300 hover:to-blue-400 border-blue-400 text-blue-800' },
+                    scissors: { emoji: '✂️', name: 'Scissors', description: 'Cuts Paper', colors: 'from-purple-200 to-purple-300 hover:from-purple-300 hover:to-purple-400 border-purple-400 text-purple-800' }
+                },
+                decorations: ['⚡', '💎', '🔥', '💫']
+            }
+        };
+        
+        function changeTheme(themeName) {
+            currentTheme = themeName;
+            const theme = themes[themeName];
+            
+            // Update header
+            document.getElementById('gameTitle').textContent = theme.title;
+            document.getElementById('gameSubtitle').textContent = theme.subtitle;
+            document.getElementById('ageGroup').textContent = theme.ageGroup;
+            
+            // Update body class
+            document.getElementById('gameBody').className = `min-h-screen theme-transition ${theme.bodyClass}`;
+            
+            // Update choice buttons
+            updateChoiceButtons();
+            
+            // Update decorations
+            updateDecorations();
+            
+            // Reset game state
+            resetGame();
+        }
+        
+        function updateChoiceButtons() {
+            const theme = themes[currentTheme];
+            const buttonsContainer = document.getElementById('choiceButtons');
+            
+            buttonsContainer.innerHTML = `
+                <button class="choice-button bg-gradient-to-br ${theme.choices.rock.colors} rounded-3xl p-6 border-4 shadow-lg hover:shadow-xl" onclick="playGame('rock')">
+                    <div class="text-6xl mb-3">${theme.choices.rock.emoji}</div>
+                    <div class="text-xl font-bold">${theme.choices.rock.name}</div>
+                    <div class="text-sm opacity-70">${theme.choices.rock.description}</div>
+                </button>
+                
+                <button class="choice-button bg-gradient-to-br ${theme.choices.paper.colors} rounded-3xl p-6 border-4 shadow-lg hover:shadow-xl" onclick="playGame('paper')">
+                    <div class="text-6xl mb-3">${theme.choices.paper.emoji}</div>
+                    <div class="text-xl font-bold">${theme.choices.paper.name}</div>
+                    <div class="text-sm opacity-70">${theme.choices.paper.description}</div>
+                </button>
+                
+                <button class="choice-button bg-gradient-to-br ${theme.choices.scissors.colors} rounded-3xl p-6 border-4 shadow-lg hover:shadow-xl" onclick="playGame('scissors')">
+                    <div class="text-6xl mb-3">${theme.choices.scissors.emoji}</div>
+                    <div class="text-xl font-bold">${theme.choices.scissors.name}</div>
+                    <div class="text-sm opacity-70">${theme.choices.scissors.description}</div>
+                </button>
+            `;
+        }
+        
+        function updateDecorations() {
+            const theme = themes[currentTheme];
+            const decorationsContainer = document.getElementById('floatingDecorations');
+            
+            decorationsContainer.innerHTML = `
+                <div class="fixed top-20 left-10 text-4xl float-animation opacity-60">${theme.decorations[0]}</div>
+                <div class="fixed top-40 right-20 text-3xl float-animation opacity-60" style="animation-delay: 1s;">${theme.decorations[1]}</div>
+                <div class="fixed bottom-20 left-20 text-4xl float-animation opacity-60" style="animation-delay: 2s;">${theme.decorations[2]}</div>
+                <div class="fixed bottom-40 right-10 text-3xl float-animation opacity-60" style="animation-delay: 3s;">${theme.decorations[3]}</div>
+            `;
+        }
+        
+        function playGame(playerChoice) {
+            const choices = ['rock', 'paper', 'scissors'];
+            const computerChoice = choices[Math.floor(Math.random() * 3)];
+            
+            const theme = themes[currentTheme];
+            
+            // Update display
+            document.getElementById('playerChoice').textContent = theme.choices[playerChoice].emoji;
+            document.getElementById('playerChoice').classList.add('bounce-in');
+            
+            // Animate computer thinking
+            let thinkingCount = 0;
+            const thinkingInterval = setInterval(() => {
+                const randomChoice = choices[Math.floor(Math.random() * 3)];
+                document.getElementById('computerChoice').textContent = theme.choices[randomChoice].emoji;
+                thinkingCount++;
+                
+                if (thinkingCount >= 6) {
+                    clearInterval(thinkingInterval);
+                    document.getElementById('computerChoice').textContent = theme.choices[computerChoice].emoji;
+                    document.getElementById('computerChoice').classList.add('bounce-in');
+                    
+                    // Determine winner
+                    setTimeout(() => {
+                        determineWinner(playerChoice, computerChoice);
+                    }, 500);
+                }
+            }, 200);
+            
+            // Remove animation classes
+            setTimeout(() => {
+                document.getElementById('playerChoice').classList.remove('bounce-in');
+                document.getElementById('computerChoice').classList.remove('bounce-in');
+            }, 800);
+        }
+        
+        function determineWinner(playerChoice, computerChoice) {
+            const theme = themes[currentTheme];
+            let result = '';
+            let emoji = '';
+            
+            if (playerChoice === computerChoice) {
+                result = `It's a tie! Both chose ${theme.choices[playerChoice].name}`;
+                emoji = '🤝';
+                tieScore++;
+                document.getElementById('tieScore').textContent = tieScore;
+            } else if (
+                (playerChoice === 'rock' && computerChoice === 'scissors') ||
+                (playerChoice === 'paper' && computerChoice === 'rock') ||
+                (playerChoice === 'scissors' && computerChoice === 'paper')
+            ) {
+                result = `You win! ${theme.choices[playerChoice].name} beats ${theme.choices[computerChoice].name}!`;
+                emoji = '🎉';
+                playerScore++;
+                document.getElementById('playerScore').textContent = playerScore;
+                
+                // Add celebration effect
+                document.getElementById('playerChoice').classList.add('shake');
+                setTimeout(() => {
+                    document.getElementById('playerChoice').classList.remove('shake');
+                }, 600);
+            } else {
+                result = `Computer wins! ${theme.choices[computerChoice].name} beats ${theme.choices[playerChoice].name}!`;
+                emoji = '😅';
+                computerScore++;
+                document.getElementById('computerScore').textContent = computerScore;
+                
+                // Add defeat effect
+                document.getElementById('computerChoice').classList.add('shake');
+                setTimeout(() => {
+                    document.getElementById('computerChoice').classList.remove('shake');
+                }, 600);
+            }
+            
+            document.getElementById('resultMessage').textContent = result;
+            document.getElementById('resultEmoji').textContent = emoji;
+        }
+        
+        function resetGame() {
+            document.getElementById('playerChoice').textContent = '❓';
+            document.getElementById('computerChoice').textContent = '❓';
+            document.getElementById('resultMessage').textContent = 'Choose your move to start the battle!';
+            document.getElementById('resultEmoji').textContent = '';
+        }
+        
+        function resetScores() {
+            playerScore = 0;
+            computerScore = 0;
+            tieScore = 0;
+            document.getElementById('playerScore').textContent = '0';
+            document.getElementById('computerScore').textContent = '0';
+            document.getElementById('tieScore').textContent = '0';
+            resetGame();
+        }
+        
+        // Initialize with animals theme
+        changeTheme('animals');
+    </script>
+    
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96c10e819706b2af',t:'MTc1NDY3NzUzMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

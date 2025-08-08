@@ -1,0 +1,8 @@
+# GitHub Pages Configuration
+
+# This file is used to configure GitHub Pages. 
+# Set the source to the main branch and root directory.
+
+source:
+  branch: main
+  path: /

@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoryCue-Compact v1 Player - Simflo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #F7F7F7;
+            color: #1E1E1E;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #7B54FA;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 16px;
+            color: #606060;
+        }
+
+        .player-container {
+            background: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            margin-bottom: 24px;
+            max-width: 100%;
+        }
+
+        .canvas-container {
+            position: relative;
+            border: 2px solid #E0E0E0;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        #storyCanvas {
+            display: block;
+            cursor: pointer;
+        }
+
+        .controls {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: #7B54FA;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: #6B46E5;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            background: #E0E0E0;
+            color: #606060;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #FFFFFF;
+            color: #7B54FA;
+            border: 2px solid #7B54FA;
+        }
+
+        .btn-secondary:hover {
+            background: #7B54FA;
+            color: white;
+        }
+
+        .status {
+            font-size: 14px;
+            color: #606060;
+            text-align: center;
+        }
+
+        .demo-section {
+            background: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .demo-section h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1E1E1E;
+            margin-bottom: 16px;
+        }
+
+        .demo-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .json-input {
+            width: 100%;
+            min-height: 200px;
+            padding: 16px;
+            border: 2px solid #E0E0E0;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            resize: vertical;
+            margin-bottom: 16px;
+        }
+
+        .json-input:focus {
+            outline: none;
+            border-color: #7B54FA;
+        }
+
+        .waiting-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(123, 84, 250, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .waiting-indicator.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .demo-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>StoryCue-Compact v1</h1>
+        <p>Interactive Story Player with Animation Engine</p>
+    </div>
+
+    <div class="player-container">
+        <div class="canvas-container">
+            <canvas id="storyCanvas" width="800" height="600"></canvas>
+            <div class="waiting-indicator" id="waitingIndicator">Click to continue</div>
+        </div>
+        <div class="controls">
+            <button class="btn" id="playBtn">Play</button>
+            <button class="btn btn-secondary" id="pauseBtn">Pause</button>
+            <button class="btn btn-secondary" id="resetBtn">Reset</button>
+            <div class="status" id="statusText">Ready to play</div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Demo Stories</h2>
+        <div class="demo-buttons">
+            <button class="btn btn-secondary" onclick="loadDemo('welcome')">Welcome Story</button>
+            <button class="btn btn-secondary" onclick="loadDemo('presentation')">Presentation Demo</button>
+            <button class="btn btn-secondary" onclick="loadDemo('emoji')">Emoji Story</button>
+        </div>
+        
+        <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 12px;">Custom JSON Story</h3>
+        <textarea class="json-input" id="jsonInput" placeholder="Paste your StoryCue-Compact JSON here..."></textarea>
+        <button class="btn" onclick="loadCustomStory()">Load Custom Story</button>
+    </div>
+
+    <script>
+        class StoryCuePlayer {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.story = null;
+                this.startTime = 0;
+                this.currentTime = 0;
+                this.isPlaying = false;
+                this.isPaused = false;
+                this.isWaiting = false;
+                this.animationFrame = null;
+                this.assets = new Map();
+                
+                this.canvas.addEventListener('click', () => this.handleClick());
+                
+                this.easeOut = (t) => 1 - Math.pow(1 - t, 3);
+            }
+
+            async loadStory(storyData) {
+                this.story = storyData;
+                this.canvas.width = storyData.meta.w;
+                this.canvas.height = storyData.meta.h;
+                
+                // Load assets
+                this.assets.clear();
+                if (storyData.assets) {
+                    for (const [id, src] of Object.entries(storyData.assets)) {
+                        if (src.startsWith('emoji:')) {
+                            this.assets.set(id, { type: 'emoji', data: src.substring(6) });
+                        } else {
+                            const img = new Image();
+                            img.crossOrigin = 'anonymous';
+                            await new Promise((resolve, reject) => {
+                                img.onload = resolve;
+                                img.onerror = reject;
+                                img.src = src;
+                            });
+                            this.assets.set(id, { type: 'image', data: img });
+                        }
+                    }
+                }
+                
+                this.reset();
+                this.updateStatus('Story loaded - ready to play');
+            }
+
+            play() {
+                if (!this.story) return;
+                
+                if (this.isPaused) {
+                    this.isPaused = false;
+                    this.startTime = Date.now() - this.currentTime;
+                } else {
+                    this.startTime = Date.now();
+                    this.currentTime = 0;
+                }
+                
+                this.isPlaying = true;
+                this.isWaiting = false;
+                this.hideWaitingIndicator();
+                this.animate();
+                this.updateStatus('Playing...');
+            }
+
+            pause() {
+                this.isPlaying = false;
+                this.isPaused = true;
+                if (this.animationFrame) {
+                    cancelAnimationFrame(this.animationFrame);
+                }
+                this.updateStatus('Paused');
+            }
+
+            reset() {
+                this.isPlaying = false;
+                this.isPaused = false;
+                this.isWaiting = false;
+                this.currentTime = 0;
+                if (this.animationFrame) {
+                    cancelAnimationFrame(this.animationFrame);
+                }
+                this.hideWaitingIndicator();
+                this.render();
+                this.updateStatus('Reset - ready to play');
+            }
+
+            handleClick() {
+                if (this.isWaiting) {
+                    this.isWaiting = false;
+                    this.hideWaitingIndicator();
+                    this.play();
+                }
+            }
+
+            animate() {
+                if (!this.isPlaying) return;
+
+                this.currentTime = Date.now() - this.startTime;
+                this.render();
+
+                // Check for waiting events
+                const waitingEvent = this.story.tl.find(event => 
+                    event.wait && 
+                    this.currentTime >= event.t + (event.d || 0) &&
+                    this.currentTime < event.t + (event.d || 0) + 100 // Small buffer
+                );
+
+                if (waitingEvent && !this.isWaiting) {
+                    this.isWaiting = true;
+                    this.isPlaying = false;
+                    this.showWaitingIndicator();
+                    this.updateStatus('Waiting for click...');
+                    return;
+                }
+
+                // Check if story is complete
+                const maxTime = Math.max(...this.story.tl.map(event => 
+                    event.t + (event.d || 0) + (event.ex?.ms || 0)
+                ));
+
+                if (this.currentTime >= maxTime) {
+                    this.isPlaying = false;
+                    this.updateStatus('Story complete');
+                    return;
+                }
+
+                this.animationFrame = requestAnimationFrame(() => this.animate());
+            }
+
+            render() {
+                if (!this.story) return;
+
+                // Clear canvas
+                this.ctx.fillStyle = this.story.meta.bg || '#FFFFFF';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Render each timeline item
+                for (const event of this.story.tl) {
+                    this.renderEvent(event);
+                }
+            }
+
+            renderEvent(event) {
+                const alpha = this.calculateAlpha(event);
+                if (alpha <= 0) return;
+
+                const { x, y } = this.calculatePosition(event);
+                const scale = this.calculateScale(event);
+
+                this.ctx.save();
+                this.ctx.globalAlpha = alpha;
+                this.ctx.translate(x, y);
+                this.ctx.scale(scale, scale);
+
+                if (event.k === 'T') {
+                    this.renderText(event);
+                } else if (event.k === 'I') {
+                    this.renderIcon(event);
+                }
+
+                this.ctx.restore();
+            }
+
+            calculateAlpha(event) {
+                const eventStart = event.t;
+                const enterDuration = event.en?.ms || 0;
+                const holdDuration = event.d || 0;
+                const exitDuration = event.ex?.ms || 0;
+
+                if (this.currentTime < eventStart) return 0;
+                
+                const relativeTime = this.currentTime - eventStart;
+
+                if (relativeTime < enterDuration) {
+                    return this.easeOut(relativeTime / enterDuration);
+                } else if (relativeTime < enterDuration + holdDuration) {
+                    return 1;
+                } else if (event.ex && relativeTime < enterDuration + holdDuration + exitDuration) {
+                    const exitProgress = (relativeTime - enterDuration - holdDuration) / exitDuration;
+                    return 1 - this.easeOut(exitProgress);
+                } else if (!event.ex) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }
+
+            calculatePosition(event) {
+                let x = event.x || 0;
+                let y = event.y || 0;
+
+                const eventStart = event.t;
+                const enterDuration = event.en?.ms || 0;
+                const holdDuration = event.d || 0;
+                const exitDuration = event.ex?.ms || 0;
+                const relativeTime = this.currentTime - eventStart;
+
+                // Apply enter offset
+                if (event.en && relativeTime < enterDuration) {
+                    const progress = this.easeOut(relativeTime / enterDuration);
+                    const ox = event.en.ox || 0;
+                    const oy = event.en.oy || 0;
+                    x += ox * (1 - progress);
+                    y += oy * (1 - progress);
+                }
+
+                // Apply exit offset
+                if (event.ex && relativeTime > enterDuration + holdDuration) {
+                    const exitTime = relativeTime - enterDuration - holdDuration;
+                    if (exitTime < exitDuration) {
+                        const progress = this.easeOut(exitTime / exitDuration);
+                        const ox = event.ex.ox || 0;
+                        const oy = event.ex.oy || 0;
+                        x += ox * progress;
+                        y += oy * progress;
+                    }
+                }
+
+                return { x, y };
+            }
+
+            calculateScale(event) {
+                if (!event.en || (event.en.a !== 'pp' && event.en.a !== 'zm')) return 1;
+
+                const eventStart = event.t;
+                const enterDuration = event.en?.ms || 0;
+                const holdDuration = event.d || 0;
+                const exitDuration = event.ex?.ms || 0;
+                const relativeTime = this.currentTime - eventStart;
+
+                const startScale = event.en.sc || 1.2;
+
+                if (relativeTime < enterDuration) {
+                    const progress = this.easeOut(relativeTime / enterDuration);
+                    return startScale + (1 - startScale) * progress;
+                } else if (event.ex && (event.ex.a === 'pp' || event.ex.a === 'zm') && 
+                          relativeTime > enterDuration + holdDuration) {
+                    const exitTime = relativeTime - enterDuration - holdDuration;
+                    if (exitTime < exitDuration) {
+                        const progress = this.easeOut(exitTime / exitDuration);
+                        const exitScale = event.ex.sc || 1.0;
+                        return 1 + (exitScale - 1) * progress;
+                    }
+                }
+
+                return 1;
+            }
+
+            renderText(event) {
+                const font = event.f || this.story.meta.font || '16px Inter, sans-serif';
+                const color = event.c || this.story.meta.color || '#1E1E1E';
+                const align = event.al || 'l';
+
+                this.ctx.font = font;
+                this.ctx.fillStyle = color;
+                this.ctx.textBaseline = 'middle';
+                
+                switch (align) {
+                    case 'c': this.ctx.textAlign = 'center'; break;
+                    case 'r': this.ctx.textAlign = 'right'; break;
+                    default: this.ctx.textAlign = 'left'; break;
+                }
+
+                this.ctx.fillText(event.txt, 0, 0);
+            }
+
+            renderIcon(event) {
+                const asset = this.assets.get(event.id);
+                if (!asset) return;
+
+                const size = event.sz || 32;
+
+                if (asset.type === 'emoji') {
+                    this.ctx.font = `${size}px Arial`;
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+                    this.ctx.fillText(asset.data, 0, 0);
+                } else if (asset.type === 'image') {
+                    const img = asset.data;
+                    const aspect = img.width / img.height;
+                    const width = size;
+                    const height = size / aspect;
+                    this.ctx.drawImage(img, -width/2, -height/2, width, height);
+                }
+            }
+
+            showWaitingIndicator() {
+                document.getElementById('waitingIndicator').classList.add('show');
+            }
+
+            hideWaitingIndicator() {
+                document.getElementById('waitingIndicator').classList.remove('show');
+            }
+
+            updateStatus(text) {
+                document.getElementById('statusText').textContent = text;
+            }
+        }
+
+        // Initialize player
+        const player = new StoryCuePlayer('storyCanvas');
+
+        // Demo stories
+        const demoStories = {
+            welcome: {
+                v: "scc-1",
+                meta: {
+                    w: 800,
+                    h: 600,
+                    bg: "#F7F7F7",
+                    fps: 60,
+                    font: "700 40px Inter, sans-serif",
+                    color: "#1E1E1E"
+                },
+                assets: {
+                    "wave": "emoji:👋",
+                    "star": "emoji:⭐"
+                },
+                tl: [
+                    {
+                        t: 0,
+                        k: "T",
+                        x: 400,
+                        y: 200,
+                        al: "c",
+                        txt: "Welcome to StoryCue!",
+                        c: "#7B54FA",
+                        d: 2000,
+                        en: { a: "fd", ms: 800 },
+                        ex: { a: "fd", ms: 500 }
+                    },
+                    {
+                        t: 1000,
+                        k: "I",
+                        x: 350,
+                        y: 300,
+                        id: "wave",
+                        sz: 60,
+                        d: 1500,
+                        en: { a: "pp", ms: 600, sc: 1.5 },
+                        ex: { a: "sy", ms: 400, oy: -50 }
+                    },
+                    {
+                        t: 2000,
+                        k: "T",
+                        x: 400,
+                        y: 400,
+                        al: "c",
+                        txt: "Click anywhere to continue",
+                        f: "400 18px Inter, sans-serif",
+                        c: "#606060",
+                        d: 1000,
+                        en: { a: "sy", ms: 500, oy: 30 },
+                        wait: true
+                    },
+                    {
+                        t: 4000,
+                        k: "T",
+                        x: 400,
+                        y: 300,
+                        al: "c",
+                        txt: "Thanks for trying it out!",
+                        d: 2000,
+                        en: { a: "zm", ms: 800, sc: 0.5 },
+                        ex: { a: "fd", ms: 600 }
+                    }
+                ]
+            },
+            presentation: {
+                v: "scc-1",
+                meta: {
+                    w: 800,
+                    h: 600,
+                    bg: "#FFFFFF",
+                    fps: 60,
+                    font: "600 32px Inter, sans-serif",
+                    color: "#1E1E1E"
+                },
+                assets: {
+                    "chart": "emoji:📊",
+                    "rocket": "emoji:🚀"
+                },
+                tl: [
+                    {
+                        t: 0,
+                        k: "T",
+                        x: 400,
+                        y: 100,
+                        al: "c",
+                        txt: "Q4 Results",
+                        c: "#7B54FA",
+                        f: "700 48px Inter, sans-serif",
+                        d: 3000,
+                        en: { a: "sy", ms: 800, oy: -50 }
+                    },
+                    {
+                        t: 1000,
+                        k: "I",
+                        x: 200,
+                        y: 250,
+                        id: "chart",
+                        sz: 80,
+                        d: 2500,
+                        en: { a: "sx", ms: 600, ox: -100 }
+                    },
+                    {
+                        t: 1500,
+                        k: "T",
+                        x: 500,
+                        y: 250,
+                        txt: "Revenue: +25%",
+                        c: "#28A745",
+                        d: 2000,
+                        en: { a: "sx", ms: 500, ox: 100 }
+                    },
+                    {
+                        t: 2000,
+                        k: "T",
+                        x: 500,
+                        y: 300,
+                        txt: "Growth: +40%",
+                        c: "#28A745",
+                        d: 1500,
+                        en: { a: "sx", ms: 500, ox: 100 }
+                    },
+                    {
+                        t: 3000,
+                        k: "I",
+                        x: 400,
+                        y: 450,
+                        id: "rocket",
+                        sz: 60,
+                        d: 2000,
+                        en: { a: "pp", ms: 800, sc: 2.0 }
+                    }
+                ]
+            },
+            emoji: {
+                v: "scc-1",
+                meta: {
+                    w: 800,
+                    h: 600,
+                    bg: "#1E1E1E",
+                    fps: 60,
+                    font: "600 24px Inter, sans-serif",
+                    color: "#FFFFFF"
+                },
+                assets: {
+                    "sun": "emoji:☀️",
+                    "moon": "emoji:🌙",
+                    "star1": "emoji:⭐",
+                    "star2": "emoji:✨",
+                    "heart": "emoji:💜"
+                },
+                tl: [
+                    {
+                        t: 0,
+                        k: "I",
+                        x: 400,
+                        y: 150,
+                        id: "sun",
+                        sz: 100,
+                        d: 2000,
+                        en: { a: "zm", ms: 1000, sc: 0.3 },
+                        ex: { a: "fd", ms: 500 }
+                    },
+                    {
+                        t: 500,
+                        k: "T",
+                        x: 400,
+                        y: 250,
+                        al: "c",
+                        txt: "Day transitions to night...",
+                        d: 2000,
+                        en: { a: "fd", ms: 800 }
+                    },
+                    {
+                        t: 2500,
+                        k: "I",
+                        x: 400,
+                        y: 150,
+                        id: "moon",
+                        sz: 80,
+                        d: 2000,
+                        en: { a: "fd", ms: 800 }
+                    },
+                    {
+                        t: 3000,
+                        k: "I",
+                        x: 200,
+                        y: 100,
+                        id: "star1",
+                        sz: 40,
+                        d: 2000,
+                        en: { a: "fl", ms: 1000, ox: -50, oy: -30 }
+                    },
+                    {
+                        t: 3200,
+                        k: "I",
+                        x: 600,
+                        y: 120,
+                        id: "star2",
+                        sz: 35,
+                        d: 2000,
+                        en: { a: "fl", ms: 1200, ox: 60, oy: -40 }
+                    },
+                    {
+                        t: 4000,
+                        k: "I",
+                        x: 400,
+                        y: 450,
+                        id: "heart",
+                        sz: 60,
+                        d: 1500,
+                        en: { a: "pp", ms: 800, sc: 1.8 }
+                    }
+                ]
+            }
+        };
+
+        // Control handlers
+        document.getElementById('playBtn').addEventListener('click', () => player.play());
+        document.getElementById('pauseBtn').addEventListener('click', () => player.pause());
+        document.getElementById('resetBtn').addEventListener('click', () => player.reset());
+
+        // Demo loaders
+        function loadDemo(demoName) {
+            if (demoStories[demoName]) {
+                player.loadStory(demoStories[demoName]);
+            }
+        }
+
+        function loadCustomStory() {
+            const jsonText = document.getElementById('jsonInput').value.trim();
+            if (!jsonText) {
+                alert('Please paste a StoryCue-Compact JSON story first.');
+                return;
+            }
+
+            try {
+                const storyData = JSON.parse(jsonText);
+                player.loadStory(storyData);
+            } catch (error) {
+                alert('Invalid JSON format. Please check your story data.');
+                console.error('JSON Parse Error:', error);
+            }
+        }
+
+        // Load welcome demo by default
+        loadDemo('welcome');
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96c52697a3fb06a4',t:'MTc1NDcyMDQ1OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
